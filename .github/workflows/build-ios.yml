@@ -12,15 +12,15 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: List files
-        run: ls -la
-
       - name: Select Xcode 16
         run: sudo xcode-select -s /Applications/Xcode_16.app/Contents/Developer
 
-      - name: Install iOS 18 SDK components
+      - name: Install required iOS platform
         run: |
-          xcodebuild -runFirstLaunch
+          xcodebuild -downloadPlatform iOS
+
+      - name: List files
+        run: ls -la
 
       - name: Cache SPM
         uses: actions/cache@v4
@@ -34,11 +34,11 @@ jobs:
 
       - name: Archive
         run: >
-          xcodebuild archive -project tvbox.xcodeproj -scheme tvbox -destination generic/platform=iOS -archivePath tvboxSwift.xcarchive PRODUCT_BUNDLE_IDENTIFIER=com.test.tvboxswift SKIP_INSTALL=NO BUILD_LIBRARY_FOR_DISTRIBUTION=YES
+          xcodebuild archive -project tvbox.xcodeproj -scheme tvbox -destination generic/platform=iOS -archivePath tvboxSwift.xcarchive PRODUCT_BUNDLE_IDENTIFIER=com.test.tvboxswift SKIP_INSTALL=NO
 
       - name: Generate exportOptions.plist
         run: >
-          echo '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict><key>method</key><string>development</string><key>signingStyle</key><string>manual</string><key>signingCertificate</key><string></string><key>provisioningProfile</key><string></string><key>bundleIdentifier</key><string>com.test.tvboxswift</string></dict></plist>' > exportOptions.plist
+          echo '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict><key>method</key><string>ad hoc</string></dict></plist>' > exportOptions.plist
 
       - name: Export IPA
         run: >
