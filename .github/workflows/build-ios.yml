@@ -36,7 +36,8 @@ jobs:
             PRODUCT_BUNDLE_IDENTIFIER=com.test.tvboxswift \
             SKIP_INSTALL=NO \
             CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOW=NO
 
       - name: Generate exportOptions.plist (Unsigned)
         run: |
@@ -46,13 +47,15 @@ jobs:
           <plist version="1.0">
           <dict>
               <key>method</key>
-              <string>ad-hoc</string>
+              <string>developer-id</string>
               <key>signingStyle</key>
-              <string>automatic</string>
+              <string>manual</string>
               <key>stripSwiftSymbols</key>
               <true/>
               <key>thinning</key>
               <string>&lt;none&gt;</string>
+              <key>compileBitcode</key>
+              <false/>
           </dict>
           </plist>
           EOF
@@ -63,6 +66,7 @@ jobs:
             -archivePath tvboxSwift.xcarchive \
             -exportPath ./output \
             -exportOptionsPlist exportOptions.plist
+            
 
       - name: Upload IPA
         uses: actions/upload-artifact@v4
