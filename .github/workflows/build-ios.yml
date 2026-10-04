@@ -26,7 +26,10 @@ jobs:
       - name: Xcode Clean
         run: |
           xcodebuild clean -project tvbox.xcodeproj -scheme tvbox \
-            -destination generic/platform=iOS
+            -destination generic/platform=iOS \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
 
       - name: Archive
         run: |
@@ -37,36 +40,20 @@ jobs:
             SKIP_INSTALL=NO \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOW=NO
+            CODE_SIGNING_ALLOWED=NO
 
-      - name: Generate exportOptions.plist (Unsigned)
+      # ========= 删除原来 Generate exportOptions.plist 和 Export IPA 两个步骤 =========
+      # 手动提取App，打包IPA，完全绕开exportArchive
+      - name: Manual build IPA (Payload zip)
         run: |
-          cat > exportOptions.plist << 'EOF'
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-              <key>method</key>
-              <string>developer-id</string>
-              <key>signingStyle</key>
-              <string>manual</string>
-              <key>stripSwiftSymbols</key>
-              <true/>
-              <key>thinning</key>
-              <string>&lt;none&gt;</string>
-              <key>compileBitcode</key>
-              <false/>
-          </dict>
-          </plist>
-          EOF
-
-      - name: Export IPA (Unsigned)
-        run: |
-          xcodebuild -exportArchive \
-            -archivePath tvboxSwift.xcarchive \
-            -exportPath ./output \
-            -exportOptionsPlist exportOptions.plist
-            
+          # 创建Payload文件夹（iOS IPA标准结构）
+          mkdir -p ./output/Payload
+          # 把编译好的app复制进Payload
+          cp -r tvboxSwift.xcarchive/Products/Applications/*.app ./output/Payload/
+          cd ./output
+          # zip打包，生成ipa
+          zip -r tvbox-swift.ipa Payload
+          rm -rf Payload
 
       - name: Upload IPA
         uses: actions/upload-artifact@v4
