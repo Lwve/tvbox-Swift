@@ -6,21 +6,16 @@ on:
 
 jobs:
   build:
-    runs-on: macos-15
+    runs-on: macos-14
     timeout-minutes: 40
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Select Xcode 16
-        run: sudo xcode-select -s /Applications/Xcode_16.app/Contents/Developer
-
-      - name: Install required iOS platform
+      - name: Check Xcode & iOS SDK
         run: |
-          xcodebuild -downloadPlatform iOS
-
-      - name: List files
-        run: ls -la
+          xcodebuild -version
+          xcodebuild -showsdks | grep iOS
 
       - name: Cache SPM
         uses: actions/cache@v4
@@ -29,20 +24,45 @@ jobs:
           key: ${{ runner.os }}-spm-${{ github.sha }}
 
       - name: Xcode Clean
-        run: >
-          xcodebuild clean -project tvbox.xcodeproj -scheme tvbox -destination generic/platform=iOS
+        run: |
+          xcodebuild clean -project tvbox.xcodeproj -scheme tvbox \
+            -destination generic/platform=iOS
 
       - name: Archive
-        run: >
-          xcodebuild archive -project tvbox.xcodeproj -scheme tvbox -destination generic/platform=iOS -archivePath tvboxSwift.xcarchive PRODUCT_BUNDLE_IDENTIFIER=com.test.tvboxswift SKIP_INSTALL=NO
+        run: |
+          xcodebuild archive -project tvbox.xcodeproj -scheme tvbox \
+            -destination generic/platform=iOS \
+            -archivePath tvboxSwift.xcarchive \
+            PRODUCT_BUNDLE_IDENTIFIER=com.test.tvboxswift \
+            SKIP_INSTALL=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO
 
-      - name: Generate exportOptions.plist
-        run: >
-          echo '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict><key>method</key><string>ad hoc</string></dict></plist>' > exportOptions.plist
+      - name: Generate exportOptions.plist (Unsigned)
+        run: |
+          cat > exportOptions.plist << 'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>method</key>
+              <string>ad-hoc</string>
+              <key>signingStyle</key>
+              <string>automatic</string>
+              <key>stripSwiftSymbols</key>
+              <true/>
+              <key>thinning</key>
+              <string>&lt;none&gt;</string>
+          </dict>
+          </plist>
+          EOF
 
-      - name: Export IPA
-        run: >
-          xcodebuild -exportArchive -archivePath tvboxSwift.xcarchive -exportPath ./output -exportOptionsPlist exportOptions.plist
+      - name: Export IPA (Unsigned)
+        run: |
+          xcodebuild -exportArchive \
+            -archivePath tvboxSwift.xcarchive \
+            -exportPath ./output \
+            -exportOptionsPlist exportOptions.plist
 
       - name: Upload IPA
         uses: actions/upload-artifact@v4
