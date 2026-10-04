@@ -2,7 +2,7 @@
 name: Build tvbox-Swift iOS IPA
 # 两种触发方式：推送代码自动打包；或者手动点击按钮打包（推荐手动）
 on:
-  workflow_dispatch: # 手动触发，网页点按钮启动编译
+  workflow_dispatch: # 手动触发，网页点按钮启动编译 
   push:
     branches: [ main ]
 
