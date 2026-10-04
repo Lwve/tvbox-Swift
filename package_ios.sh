@@ -43,14 +43,13 @@ EXPORT_OPTIONS="ExportOptions.plist"
 echo "开始构建 iOS Archive..."
 xcodebuild archive \
     -project tvbox.xcodeproj \
-    -scheme tvbox-Swift \
+    -scheme "$SCHEME" \
     -configuration "$CONFIGURATION" \
     -destination "generic/platform=iOS" \
-    -archivePath tvboxSwift.xcarchive \
+    -archivePath "$ARCHIVE_PATH" \
     CODE_SIGN_STYLE=Manual \
     CODE_SIGN_IDENTITY="$SIGNING_IDENTITY" \
-    PROVISIONING_PROFILE_SPECIFIER=com.test.tvboxswift \
-    SKIP_INSTALL=NO \
+    PROVISIONING_PROFILE_SPECIFIER="$PROVISION_UUID" \
     DEVELOPMENT_TEAM="$TEAM_ID" \
     PRODUCT_BUNDLE_IDENTIFIER="$BUNDLE_ID"
 
