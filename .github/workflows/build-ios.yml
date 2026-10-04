@@ -7,7 +7,7 @@ on:
 jobs:
   build:
     runs-on: macos-15
-    timeout-minutes: 30
+    timeout-minutes: 40
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
@@ -18,9 +18,10 @@ jobs:
       - name: Select Xcode 16
         run: sudo xcode-select -s /Applications/Xcode_16.app/Contents/Developer
 
-      - name: 修改项目部署目标 iOS 17，规避iOS18 SDK依赖
-        run: >
-          plutil -replace LABEL -string IPHONEOS_DEPLOYMENT_TARGET tvbox.xcodeproj/project.pbxproj
+      - name: Install iOS 18 SDK components
+        run: |
+          xcodebuild -runFirstLaunch
+          xcodebuild -installComponents
 
       - name: Cache SPM
         uses: actions/cache@v4
