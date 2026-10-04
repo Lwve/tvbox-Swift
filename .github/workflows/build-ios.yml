@@ -1,1 +1,76 @@
-name: Build tvbox-Swift iOS IPA<br/>on:<br/>  workflow_dispatch:<br/>  push:<br/>    branches: [ main ]<br/><br/>jobs:<br/>  build:<br/>    runs-on: macos-14<br/>    timeout-minutes: 30<br/>    steps:<br/>      - name: Checkout source<br/>        uses: actions/checkout@v4<br/><br/>      - name: Setup Xcode<br/>        uses: maxim-lobanov/setup-xcode@v1<br/>        with:<br/>          xcode-version: "15.4"<br/><br/>      - name: Cache SPM<br/>        uses: actions/cache@v4<br/>        with:<br/>          path: ~/Library/Developer/Xcode/DerivedData<br/>          key: ${{ runner.os }}-spm-${{ github.sha }}<br/><br/>      - name: Xcode Clean<br/>        run: |<br/>          xcodebuild clean \<br/>          -project tvbox-Swift.xcodeproj \<br/>          -scheme tvbox-Swift \<br/>          -destination generic/platform=iOS<br/><br/>      - name: Archive<br/>        run: |<br/>          xcodebuild archive \<br/>          -project tvbox-Swift.xcodeproj \<br/>          -scheme tvbox-Swift \<br/>          -destination generic/platform=iOS \<br/>          -archivePath tvboxSwift.xcarchive \<br/>          PRODUCT_BUNDLE_IDENTIFIER=com.test.tvboxswift \<br/>          SKIP_INSTALL=NO \<br/>          BUILD_LIBRARY_FOR_DISTRIBUTION=YES<br/><br/>      - name: Generate exportOptions.plist<br/>        run: |<br/>          cat > exportOptions.plist <<'EOF'<br/><?xml version="1.0" encoding="UTF-8"?><br/><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><br/><plist version="1.0"><br/><dict><br/>  <key>method</key><br/>  <string>development</string><br/>  <key>signingStyle</key><br/>  <string>manual</string><br/>  <key>signingCertificate</key><br/>  <string></string><br/>  <key>provisioningProfile</key><br/>  <string></string><br/>  <key>bundleIdentifier</key><br/>  <string>com.test.tvboxswift</string><br/></dict><br/></plist><br/>EOF<br/><br/>      - name: Export IPA<br/>        run: |<br/>          xcodebuild -exportArchive \<br/>          -archivePath tvboxSwift.xcarchive \<br/>          -exportPath ./output \<br/>          -exportOptionsPlist exportOptions.plist<br/><br/>      - name: Upload IPA<br/>        uses: actions/upload-artifact@v4<br/>        with:<br/>          name: tvbox-swift-ipa<br/>          path: ./output/*.ipa<br/>          retention-days: 7
+name: Build tvbox-Swift iOS IPA
+on:
+workflow_dispatch:
+push:
+branches: [ main ]
+
+jobs:
+build:
+runs-on: macos-14
+timeout-minutes: 30
+steps:<br/>      - name: Checkout source
+uses: actions/checkout@v4
+
+- name: Setup Xcode
+uses: maxim-lobanov/setup-xcode@v1
+with:
+xcode-version: "15.4"
+
+- name: Cache SPM
+uses: actions/cache@v4
+with:
+path: ~/Library/Developer/Xcode/DerivedData
+key: ${{ runner.os }}-spm-${{ github.sha }}
+
+- name: Xcode Clean
+run: |
+xcodebuild clean \
+-project tvbox-Swift.xcodeproj \
+-scheme tvbox-Swift \
+-destination generic/platform=iOS
+
+- name: Archive
+run: |
+xcodebuild archive \
+-project tvbox-Swift.xcodeproj \
+-scheme tvbox-Swift \
+-destination generic/platform=iOS \
+-archivePath tvboxSwift.xcarchive \
+PRODUCT_BUNDLE_IDENTIFIER=com.test.tvboxswift \
+SKIP_INSTALL=NO \
+BUILD_LIBRARY_FOR_DISTRIBUTION=YES
+
+- name: Generate exportOptions.plist
+run: |
+cat > exportOptions.plist <<'EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+<key>method</key>
+<string>development</string>
+<key>signingStyle</key>
+<string>manual</string>
+<key>signingCertificate</key>
+<string></string>
+<key>provisioningProfile</key>
+<string></string>
+<key>bundleIdentifier</key>
+<string>com.test.tvboxswift</string>
+</dict>
+</plist>
+EOF
+
+- name: Export IPA
+run: |
+xcodebuild -exportArchive \
+-archivePath tvboxSwift.xcarchive \
+-exportPath ./output \
+-exportOptionsPlist exportOptions.plist
+
+- name: Upload IPA
+uses: actions/upload-artifact@v4
+with:
+name: tvbox-swift-ipa
+path: ./output/*.ipa
+retention-days: 7
