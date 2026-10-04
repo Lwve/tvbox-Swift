@@ -20,19 +20,10 @@ with:
 path: ~/Library/Developer/Xcode/DerivedData
 key: ${{ runner.os }}-spm-${{ github.sha }}
 -name: Xcode Clean
-run: xcodebuild clean \
--project tvbox-Swift.xcodeproj \
--scheme tvbox-Swift \
--destination generic/platform=iOS
+run: xcodebuild clean -project tvbox-Swift.xcodeproj -scheme tvbox-Swift -destination generic/platform=iOS
+
 -name: Archive
-run: xcodebuild archive \
--project tvbox-Swift.xcodeproj \
--scheme tvbox-Swift \
--destination generic/platform=iOS \
--archivePath tvboxSwift.xcarchive \
-PRODUCT_BUNDLE_IDENTIFIER=com.test.tvboxswift \
-SKIP_INSTALL=NO \
-BUILD_LIBRARY_FOR_DISTRIBUTION=YES
+run: xcodebuild archive -project tvbox-Swift.xcodeproj -scheme tvbox-Swift -destination generic/platform=iOS -archivePath tvboxSwift.xcarchive PRODUCT_BUNDLE_IDENTIFIER=com.test.tvboxswift SKIP_INSTALL=NO BUILD_LIBRARY_FOR_DISTRIBUTION=YES
 -name: Generate exportOptions.plist
 run: cat > exportOptions.plist <<'EOF'
 <?xml version="1.0" encoding="UTF-8"?>
