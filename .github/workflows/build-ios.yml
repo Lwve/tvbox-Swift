@@ -46,7 +46,9 @@ jobs:
           <plist version="1.0">
           <dict>
               <key>method</key>
-              <string>ad-hoc</string>
+              <array>
+                  <string>ad-hoc</string>
+              </array>
               <key>signingStyle</key>
               <string>automatic</string>
               <key>stripSwiftSymbols</key>
