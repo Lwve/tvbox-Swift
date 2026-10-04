@@ -21,7 +21,6 @@ jobs:
       - name: Install iOS 18 SDK components
         run: |
           xcodebuild -runFirstLaunch
-          xcodebuild -installComponents
 
       - name: Cache SPM
         uses: actions/cache@v4
