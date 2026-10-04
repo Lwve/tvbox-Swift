@@ -20,11 +20,11 @@ jobs:
 
       - name: Xcode Clean
         run: >
-          xcodebuild clean -project tvbox-Swift.xcodeproj -scheme tvbox-Swift -destination generic/platform=iOS
+          xcodebuild clean -project tvbox.xcodeproj -scheme tvbox-Swift -destination generic/platform=iOS
 
       - name: Archive
         run: >
-          xcodebuild archive -project tvbox-Swift.xcodeproj -scheme tvbox-Swift -destination generic/platform=iOS -archivePath tvboxSwift.xcarchive PRODUCT_BUNDLE_IDENTIFIER=com.test.tvboxswift SKIP_INSTALL=NO BUILD_LIBRARY_FOR_DISTRIBUTION=YES
+          xcodebuild archive -project tvbox.xcodeproj -scheme tvbox-Swift -destination generic/platform=iOS -archivePath tvboxSwift.xcarchive PRODUCT_BUNDLE_IDENTIFIER=com.test.tvboxswift SKIP_INSTALL=NO BUILD_LIBRARY_FOR_DISTRIBUTION=YES
 
       - name: Generate exportOptions.plist
         run: >
