@@ -1,65 +1,36 @@
-name: Build tvbox-Swift iOS IPA
+name: iOS Build
+
 on:
-  workflow_dispatch:
-  push:
-    branches: [ master ]
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  build:
-    runs-on: macos-14
-    timeout-minutes: 30
-    steps:
-      - name: 拉取源码
-        uses: actions/checkout@v4
-
-      - name: 【调试】打印根目录
-        run: ls -la
-
-      - name: 进入 tvbox-Swift 子目录
-        run: cd tvbox-Swift
-
-      - name: 【调试】打印子目录内容（确认项目文件）
-        run: ls -la tvbox-Swift
-
-      - name: 配置Xcode
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: '15.4'
-
-      - name: 查看可用Scheme
-        run: xcodebuild -list -project tvbox-Swift/tvbox-Swift.xcodeproj
-
-      - name: Clean清理
-        run: xcodebuild clean -project tvbox-Swift/tvbox-Swift.xcodeproj -scheme tvbox-Swift -destination generic/platform=iOS
-
-      - name: Archive归档
-        run: |
-          xcodebuild archive \
-          -project tvbox-Swift/tvbox-Swift.xcodeproj \
-          -scheme tvbox-Swift \
-          -destination generic/platform=iOS \
-          -archivePath tvboxSwift.xcarchive \
-          SKIP_INSTALL=NO
-
-      - name: 导出未签名IPA
-        run: |
-          xcodebuild -exportArchive \
-          -archivePath tvboxSwift.xcarchive \
-          -exportPath ./output \
-          -exportOptionsPlist <(echo '<?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-            <key>method</key>
-            <string>development</string>
-            <key>signingStyle</key>
-            <string>manual</string>
-          </dict>
-          </plist>')
-
-      - name: 上传IPA
-        uses: actions/upload-artifact@v4
-        with:
-          name: tvbox-swift-ipa
-          path: ./output/*.ipa
-          retention-days: 7
+  build:
+    runs-on: macos-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up XcodeGen
+      run: brew install xcodegen
+    
+    - name: Load secrets
+      run: |
+        mkdir -p IOS-key
+        echo "${{ secrets.IOS_SECRETS }}" > IOS-key/secrets.sh
+        echo "${{ secrets.CERT_P12 }}" | base64 -d > IOS-key/cert.p12
+        echo "${{ secrets.CERT_MOBILEPROVISION }}" | base64 -d > IOS-key/cert.mobileprovision
+    
+    - name: Run package script
+      run: |
+        chmod +x package_ios.sh
+        ./package_ios.sh
+    
+    - name: Upload IPA
+      uses: actions/upload-artifact@v3
+      if: success()
+      with:
+        name: TVBox.ipa
+        path: TVBox.ipa
